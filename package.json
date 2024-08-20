@@ -1,0 +1,13 @@
+{
+  "name": "ysio",
+  "version": "0.0.1",
+  "description": "yjs over socket.io provider",
+  "main": "index.js",
+  "repository": "git@github.com:synestia/ysio.git",
+  "author": "Synestia",
+  "license": "MIT",
+  "dependencies": {
+    "socket.io": "^4.7.5",
+    "yjs": "^13.6.18"
+  }
+}
