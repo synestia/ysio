@@ -7,9 +7,11 @@ export type Persistence = {
     writeState: (doc: Document) => void
 }
 
+export type next = (update: Uint8Array) => void
+
 export type DocumentOptions = {    
-    onUpdate?(update: Uint8Array, next: (update: Uint8Array) => void, socket?: Socket): void | boolean | Promise<void | boolean>
-    awarenessUpdate?(awareness: Uint8Array, socket?: Socket): void | Promise<void>
+    onUpdate?(update: Uint8Array, next: next, socket: Socket): next | Promise<next | void> | void | next
+    awarenessUpdate?(awareness: Uint8Array, socket: Socket): void | Promise<void>
     onDisconnect?(socket: Socket): void | Promise<void>
     persistence?: Persistence
 }
