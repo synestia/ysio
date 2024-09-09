@@ -1,8 +1,6 @@
 import * as Y from "yjs";
-import { DocumentOptions } from "./types";
+import { DocumentOptions, UPDATE_EMIT, next } from "./types";
 import { Namespace, Socket } from "socket.io";
-
-const UPDATE_EMIT = "update-yjs";
 
 export class Document extends Y.Doc {
   public readonly name: string;
@@ -29,19 +27,20 @@ export class Document extends Y.Doc {
     }
   }
 
-  private onUpdate(update: Uint8Array, socket: Socket): void {
-    if (this.DocumentOptions?.onUpdate !== undefined) {
-      this.DocumentOptions.onUpdate(
-        update,
-        (update: Uint8Array) => {
-          Y.applyUpdateV2(this, update);
-          this.documentNamespace.emit(UPDATE_EMIT, update);
-        },
-        socket
-      );
-    } else {
+  public async onUpdate(update: Uint8Array, socket: Socket): Promise<void> {
+    const next: next = (update: Uint8Array) => {
       Y.applyUpdateV2(this, update);
       this.documentNamespace.emit(UPDATE_EMIT, update);
+    };
+
+    if (this.DocumentOptions?.onUpdate !== undefined) {
+      const result = await this.DocumentOptions.onUpdate(update, next, socket);
+
+      if (result instanceof Function) {
+        result();
+      }
+    } else {
+      next(update);
     }
 
     if (this.DocumentOptions?.persistence !== undefined) {
@@ -49,7 +48,11 @@ export class Document extends Y.Doc {
     }
   }
 
-  private awarenessUpdate(awareness: Uint8Array, socket?: Socket): void {}
+  public awarenessUpdate(awareness: Uint8Array, socket?: Socket): void {}
 
-  private onDisconnect(socket: Socket): void {}
+  public onDisconnect(socket: Socket): void {}
+
+  public getNamespace(): Namespace {
+    return this.documentNamespace;
+  }
 }

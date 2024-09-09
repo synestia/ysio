@@ -1,54 +1,68 @@
-import { Namespace, Server, Socket } from 'socket.io'
-import { DocumentOptions, ServerProviderOptions } from './types'
-import { Document } from './Document'
+import { Namespace, Server, Socket } from "socket.io";
+import {
+  DocumentOptions,
+  ServerProviderOptions,
+  UPDATE_EMIT,
+  PROXY_UPDATE_EMIT,
+} from "./types";
+import { Document } from "./Document";
 
 export class ServerProvider {
-    private io: Server
+  private io: Server;
 
-    private documentOptions?: DocumentOptions
-    private serverProviderOptions?: ServerProviderOptions
-    
-    private dynamicNamespace: Namespace
+  private documentOptions?: DocumentOptions;
+  private serverProviderOptions?: ServerProviderOptions;
 
-    private documents = new Map<string, Document>()
+  private dynamicNamespace: Namespace;
 
-    constructor(io: Server, serverProviderOptions?: ServerProviderOptions, documentOptions?: DocumentOptions) {
-        this.io = io
-        this.documentOptions = documentOptions
-        this.serverProviderOptions = serverProviderOptions
-        this.dynamicNamespace = this.io.of(/^\/yjs-\d+$/)
-    }
+  private documents = new Map<string, Document>();
 
-    public init(): void {
-        // Middleware for authentication
-        this.dynamicNamespace.use(async (socket, next) => {
-            if(!this.serverProviderOptions?.authenticate) return next()
-            if(await this.serverProviderOptions.authenticate(socket)) return next()
-            else return next(new Error('Unauthorized'))
-        })
+  constructor(
+    io: Server,
+    serverProviderOptions?: ServerProviderOptions,
+    documentOptions?: DocumentOptions
+  ) {
+    this.io = io;
+    this.documentOptions = documentOptions;
+    this.serverProviderOptions = serverProviderOptions;
+    this.dynamicNamespace = this.io.of(/^\/yjs-\d+$/);
+  }
 
-        this.dynamicNamespace.on('connection', socket => {
-            // cut everything to yjs-
-            const name: string = socket.nsp.name.replace(/^\/yjs-/, '')
-        })
-    }
+  public init(): void {
+    // Middleware for authentication
+    this.dynamicNamespace.use(async (socket, next) => {
+      if (!this.serverProviderOptions?.authenticate) return next();
+      if (await this.serverProviderOptions.authenticate(socket)) return next();
+      else return next(new Error("Unauthorized"));
+    });
 
-    private initDocument(name: string): Document {
-        if(this.documents.has(name)) return this.documents.get(name) as Document
-        
-        const document = new Document(name, this.dynamicNamespace, this.documentOptions)
-        this.documents.set(name, document)
-        return document
-    }
+    this.dynamicNamespace.on("connection", (socket) => {
+      // cut everything to yjs-
+      const name: string = socket.nsp.name.replace(/^\/yjs-/, "");
 
-    private initSync(document: Document, socket: Socket): void {
+      const document = this.initDocument(name, socket.nsp);
+      this.initSync(document, socket);
+      this.initProxy(document, socket);
+    });
+  }
 
-    }
+  private initDocument(name: string, namespace: Namespace): Document {
+    if (this.documents.has(name)) return this.documents.get(name) as Document;
 
-    private initSocketListeners(socket: Socket): void {
-    }
+    const document = new Document(name, namespace, this.documentOptions);
+    this.documents.set(name, document);
+    return document;
+  }
 
-    private initProxy(socket: Socket){
+  private initSync(document: Document, socket: Socket): void {
+    socket.on(UPDATE_EMIT, (update: Uint8Array) => {
+      document.onUpdate(update, socket);
+    });
+  }
 
-    }
+  private initProxy(doc: Document, socket: Socket) {
+    socket.on(PROXY_UPDATE_EMIT, (update: Uint8Array) => {
+      doc.getNamespace().emit(PROXY_UPDATE_EMIT, update);
+    });
+  }
 }
