@@ -1,5 +1,5 @@
 import * as Y from "yjs";
-import { DocumentOptions, UPDATE_EMIT, next } from "./types";
+import { DocumentOptions, UPDATE_EMIT, PROXY_UPDATE_EMIT, next } from "./types";
 import { Namespace, Socket } from "socket.io";
 
 export class Document extends Y.Doc {
@@ -47,6 +47,23 @@ export class Document extends Y.Doc {
 
     if (this.DocumentOptions?.persistence !== undefined) {
       this.DocumentOptions.persistence.writeState(this);
+    }
+  }
+
+  // The function is here due to having plans for having logic for multiple documents
+  public onProxyUpdate(update: Uint8Array, socket: Socket): void {
+    const next: next = (update: Uint8Array) => {
+      this.documentNamespace.emit(PROXY_UPDATE_EMIT, update);
+    };
+
+    if (this.DocumentOptions?.onProxyUpdate !== undefined) {
+      const result = this.DocumentOptions.onProxyUpdate(update, next, socket);
+
+      if (result instanceof Function) {
+        result();
+      }
+    } else {
+      next(update);
     }
   }
 

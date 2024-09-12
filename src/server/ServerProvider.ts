@@ -4,6 +4,7 @@ import {
   ServerProviderOptions,
   UPDATE_EMIT,
   PROXY_UPDATE_EMIT,
+  next,
 } from "./types";
 import { Document } from "./Document";
 
@@ -68,7 +69,7 @@ export class ServerProvider {
 
   private initProxy(doc: Document, socket: Socket) {
     socket.on(PROXY_UPDATE_EMIT, (update: Uint8Array) => {
-      doc.getNamespace().emit(PROXY_UPDATE_EMIT, update);
+      doc.onProxyUpdate(update, socket);
     });
   }
 }

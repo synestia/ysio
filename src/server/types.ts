@@ -19,11 +19,16 @@ export type DocumentOptions = {
     next: next,
     socket: Socket
   ): Function | void | Promise<void | Function>;
+  onProxyUpdate?(
+    update: Uint8Array,
+    next: next,
+    socket: Socket
+  ): Function | void | Promise<void | Function>;
   awarenessUpdate?(awareness: Uint8Array, socket: Socket): void | Promise<void>;
   onDisconnect?(socket: Socket): void | Promise<void>;
   persistence?: Persistence;
 };
 
 export type ServerProviderOptions = {
-  authenticate?(socket: Socket): boolean | Promise<boolean>;
+  authenticate?(socket: Socket): boolean | Promise<boolean>;  
 };
