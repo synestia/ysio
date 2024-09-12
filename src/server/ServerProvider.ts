@@ -41,8 +41,10 @@ export class ServerProvider {
       const name: string = socket.nsp.name.replace(/^\/yjs-/, "");
 
       const document = this.initDocument(name, socket.nsp);
+
       this.initSync(document, socket);
       this.initProxy(document, socket);
+      this.syncDocument(document, socket);
     });
   }
 
@@ -52,6 +54,10 @@ export class ServerProvider {
     const document = new Document(name, namespace, this.documentOptions);
     this.documents.set(name, document);
     return document;
+  }
+
+  private syncDocument(document: Document, socket: Socket): void {
+    document.syncDocument(socket);
   }
 
   private initSync(document: Document, socket: Socket): void {

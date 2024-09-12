@@ -22,9 +22,11 @@ export class Document extends Y.Doc {
     if (this.DocumentOptions?.persistence !== undefined) {
       // Load state from persistence
       this.DocumentOptions.persistence.bindState(this);
-      // Emit initial state
-      this.documentNamespace.emit(UPDATE_EMIT, Y.encodeStateAsUpdate(this));
     }
+  }
+
+  public syncDocument(socket: Socket): void {
+    socket.emit(UPDATE_EMIT, Y.encodeStateAsUpdateV2(this));
   }
 
   public async onUpdate(update: Uint8Array, socket: Socket): Promise<void> {
