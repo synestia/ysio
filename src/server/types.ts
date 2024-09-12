@@ -40,4 +40,5 @@ export type DocumentOptions = {
 
 export type ServerProviderOptions = {
   authenticate?(socket: Socket): boolean | Promise<boolean>;
+  onConnection?(document: Document, toEmit: any): void;
 };

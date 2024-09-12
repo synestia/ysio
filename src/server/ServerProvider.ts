@@ -50,6 +50,13 @@ export class ServerProvider {
       this.initProxy(document, socket);
       this.syncDocument(document, socket);
       this.onDisconnect(document, socket);
+
+      if (this.serverProviderOptions?.onConnection) {
+        socket.emit(
+          "connection-message",
+          this.serverProviderOptions.onConnection(document, socket)
+        );
+      }
     });
   }
 
