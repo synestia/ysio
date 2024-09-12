@@ -36,34 +36,41 @@ export class Document extends Y.Doc {
     };
 
     if (this.DocumentOptions?.onUpdate !== undefined) {
-      const result = await this.DocumentOptions.onUpdate(update, next, socket);
+      let result = this.DocumentOptions.onUpdate(update, next, socket);
+
+      if (result instanceof Promise) {
+        result = await result;
+      }
 
       if (result instanceof Function) {
         result();
       }
-    } else {
-      next(update);
-    }
 
-    if (this.DocumentOptions?.persistence !== undefined) {
-      this.DocumentOptions.persistence.writeState(this);
+      if (this.DocumentOptions?.persistence !== undefined) {
+        this.DocumentOptions.persistence.writeState(this);
+      }
     }
   }
 
   // The function is here due to having plans for having logic for multiple documents
-  public onProxyUpdate(update: Uint8Array, socket: Socket): void {
+  public async onProxyUpdate(
+    update: Uint8Array,
+    socket: Socket
+  ): Promise<void> {
     const next: next = (update: Uint8Array) => {
       this.documentNamespace.emit(PROXY_UPDATE_EMIT, update);
     };
 
     if (this.DocumentOptions?.onProxyUpdate !== undefined) {
-      const result = this.DocumentOptions.onProxyUpdate(update, next, socket);
+      let result = this.DocumentOptions.onProxyUpdate(update, next, socket);
+
+      if (result instanceof Promise) {
+        result = await result;
+      }
 
       if (result instanceof Function) {
         result();
       }
-    } else {
-      next(update);
     }
   }
 
