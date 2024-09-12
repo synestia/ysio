@@ -15,8 +15,6 @@ export class ServerProvider {
   private documentOptions?: DocumentOptions;
   private serverProviderOptions?: ServerProviderOptions;
 
-  private dynamicNamespace: Namespace;
-
   private documents = new Map<string, Document>();
 
   constructor(
@@ -27,22 +25,26 @@ export class ServerProvider {
     this.io = io;
     this.documentOptions = documentOptions;
     this.serverProviderOptions = serverProviderOptions;
-    this.dynamicNamespace = this.io.of(/^\/yjs-\d+$/);
   }
 
-  public init(): void {
+  public init(name: string = "yjs-", documentOptions?: DocumentOptions): void {
+    const namespace = new RegExp(`^\\/${name}\\d+$`);
+    const replaceRegExp = new RegExp(`^\\/${name}`);
+
+    const dynamicNamespace = this.io.of(namespace);
+
     // Middleware for authentication
-    this.dynamicNamespace.use(async (socket, next) => {
+    dynamicNamespace.use(async (socket, next) => {
       if (!this.serverProviderOptions?.authenticate) return next();
       if (await this.serverProviderOptions.authenticate(socket)) return next();
       else return next(new Error("Unauthorized"));
     });
 
-    this.dynamicNamespace.on("connection", (socket) => {
+    dynamicNamespace.on("connection", (socket) => {
       // cut everything to yjs-
-      const name: string = socket.nsp.name.replace(/^\/yjs-/, "");
+      const name: string = socket.nsp.name.replace(replaceRegExp, "");
 
-      const document = this.initDocument(name, socket.nsp);
+      const document = this.initDocument(name, socket.nsp, documentOptions);
 
       this.initSync(document, socket);
       this.initProxy(document, socket);
@@ -50,10 +52,19 @@ export class ServerProvider {
     });
   }
 
-  private initDocument(name: string, namespace: Namespace): Document {
+  private initDocument(
+    name: string,
+    namespace: Namespace,
+    documentOptions?: DocumentOptions
+  ): Document {
     if (this.documents.has(name)) return this.documents.get(name) as Document;
 
-    const document = new Document(name, namespace, this.documentOptions);
+    const document = new Document(
+      name,
+      namespace,
+      documentOptions || this.documentOptions
+    );
+    
     this.documents.set(name, document);
     return document;
   }
