@@ -20,18 +20,22 @@ export type DocumentOptions = {
     next: next,
     socket: Socket
   ): Function | void | Promise<void | Function>;
+
   onProxyUpdate?(
     update: Uint8Array,
     next: next,
     socket: Socket
   ): Function | void | Promise<void | Function>;
+
   awarenessUpdate?(
     awareness: Uint8Array,
     next: next,
     socket: Socket
-  ): Function | void | Promise<void | Function>;
-  onDisconnect?(socket: Socket): void | Promise<void>;
+  ): Function | void | Promise<void | Function>;  
+
   persistence?: Persistence;
+
+  waitBeforeDestroy?: number;
 };
 
 export type ServerProviderOptions = {

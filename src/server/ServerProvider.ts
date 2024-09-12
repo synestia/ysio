@@ -49,6 +49,7 @@ export class ServerProvider {
       this.initSync(document, socket);
       this.initProxy(document, socket);
       this.syncDocument(document, socket);
+      this.onDisconnect(document, socket);
     });
   }
 
@@ -64,7 +65,7 @@ export class ServerProvider {
       namespace,
       documentOptions || this.documentOptions
     );
-    
+
     this.documents.set(name, document);
     return document;
   }
@@ -86,6 +87,12 @@ export class ServerProvider {
   private initProxy(doc: Document, socket: Socket) {
     socket.on(PROXY_UPDATE_EMIT, (update: Uint8Array) => {
       doc.onProxyUpdate(update, socket);
+    });
+  }
+
+  private onDisconnect(doc: Document, socket: Socket): void {
+    socket.on("disconnect", () => {
+      doc.onDisconnect(socket);
     });
   }
 }

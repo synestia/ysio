@@ -128,7 +128,29 @@ export class Document extends Y.Doc {
     );
   }
 
-  public onDisconnect(socket: Socket): void {}
+  public onDisconnect(socket: Socket): void {
+    // Check how many clients are still connected
+    if (this.documentNamespace.sockets.size === 0) {
+      // If a waitBeforeDestroy is set, wait before destroying the document
+      if (this.DocumentOptions?.waitBeforeDestroy !== undefined) {
+        setTimeout(() => {
+          // Check if there are still no clients connected
+          if (this.documentNamespace.sockets.size === 0) this.destroyDocument();
+        }, this.DocumentOptions.waitBeforeDestroy);
+      } else {
+        // and then destroy it
+        this.destroyDocument();
+      }
+    }
+  }
+
+  private destroyDocument(): void {
+    if (this.DocumentOptions?.persistence !== undefined) {
+      this.DocumentOptions.persistence.writeState(this);
+    }
+    this.awareness.off("update", this.onAwarenessUpdate);
+    super.destroy();
+  }
 
   public getNamespace(): Namespace {
     return this.documentNamespace;
