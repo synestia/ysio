@@ -5,6 +5,7 @@ import {
   UPDATE_EMIT,
   PROXY_UPDATE_EMIT,
   next,
+  AWARENESS_EMIT,
 } from "./types";
 import { Document } from "./Document";
 
@@ -58,12 +59,16 @@ export class ServerProvider {
   }
 
   private syncDocument(document: Document, socket: Socket): void {
-    socket.on("sync-document-yjs", () => document.syncDocument(socket));    
+    socket.on("sync-document-yjs", () => document.syncDocument(socket));
   }
 
   private initSync(document: Document, socket: Socket): void {
     socket.on(UPDATE_EMIT, (update: Uint8Array) => {
       document.onUpdate(update, socket);
+    });
+
+    socket.on(AWARENESS_EMIT, (update: Uint8Array) => {
+      document.awarenessUpdate(update, socket);
     });
   }
 
