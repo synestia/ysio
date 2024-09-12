@@ -4,6 +4,7 @@ import { Document } from "./Document";
 export const UPDATE_EMIT = "update-yjs";
 export const AWARENESS_EMIT = "awareness-yjs";
 export const PROXY_UPDATE_EMIT = "proxy-update-yjs";
+export const SYNC_DOCUMENT = "sync-document-yjs";
 
 export type Persistence = {
   provider: any;
@@ -30,5 +31,5 @@ export type DocumentOptions = {
 };
 
 export type ServerProviderOptions = {
-  authenticate?(socket: Socket): boolean | Promise<boolean>;  
+  authenticate?(socket: Socket): boolean | Promise<boolean>;    
 };

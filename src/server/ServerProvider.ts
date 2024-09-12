@@ -58,7 +58,7 @@ export class ServerProvider {
   }
 
   private syncDocument(document: Document, socket: Socket): void {
-    document.syncDocument(socket);
+    socket.on("sync-document-yjs", () => document.syncDocument(socket));    
   }
 
   private initSync(document: Document, socket: Socket): void {
