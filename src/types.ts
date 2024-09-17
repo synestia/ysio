@@ -6,6 +6,12 @@ export const AWARENESS_EMIT = "awareness-yjs";
 export const PROXY_UPDATE_EMIT = "proxy-update-yjs";
 export const SYNC_DOCUMENT = "sync-document-yjs";
 
+export type AwarenessUpdate = {
+  added: number[];
+  updated: number[];
+  removed: number[];
+};
+
 /* Server side types */
 
 export type Persistence = {
