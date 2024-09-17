@@ -39,7 +39,7 @@ export type DocumentOptions = {
     awareness: Uint8Array,
     next: next,
     socket: Socket
-  ): Function | void | Promise<void | Function>;  
+  ): Function | void | Promise<void | Function>;
 
   persistence?: Persistence;
 
@@ -57,9 +57,9 @@ export enum UpdateLogic {
   // Only use proxy for communication
   ONLY_PROXY = "only-proxy",
   // Only use server for communication
-  ONLY_SERVER = "only-server", 
+  ONLY_SERVER = "only-server",
   // Use both proxy and server for communication
-  FULL = "full",    
+  FULL = "full",
 }
 
 export type ClientProviderOptions = {
@@ -67,16 +67,34 @@ export type ClientProviderOptions = {
   updateLogic?: UpdateLogic;
   customNamespace?: string;
   autoConnect?: boolean;
-  authentication?: {[key: string]: any};
+  authentication?: { [key: string]: any };
   forceNew?: boolean;
   // On client side updates -> changes od local yDoc
-  onUpdate?(update: Uint8Array, next: next): Function | void | Promise<void | Function>;
-  onProxyUpdate?(update: Uint8Array, next: next): Function | void | Promise<void | Function>;
-  onAwarenessUpdate?(update: Uint8Array, next: next): Function | void | Promise<void | Function>;
+  onUpdate?(
+    update: Uint8Array,
+    next: next
+  ): Function | void | Promise<void | Function>;
+  onProxyUpdate?(
+    update: Uint8Array,
+    next: next
+  ): Function | void | Promise<void | Function>;
+  onAwarenessUpdate?(
+    update: Uint8Array,
+    next: next
+  ): Function | void | Promise<void | Function>;
 
   // On incoming updates -> changes of remote yDoc aka server
-  incomingUpdate?(update: Uint8Array, next: next): Function | void | Promise<void | Function>;
-  incomingProxyUpdate?(update: Uint8Array, next: next): Function | void | Promise<void | Function>;
-  incomingAwarenessUpdate?(update: Uint8Array, next: next): Function | void | Promise<void | Function>;
-  onConnectionError?(socket: Socket, error: Error): void;
-}
+  incomingUpdate?(
+    update: Uint8Array,
+    next: next
+  ): Function | void | Promise<void | Function>;
+  incomingProxyUpdate?(
+    update: Uint8Array,
+    next: next
+  ): Function | void | Promise<void | Function>;
+  incomingAwarenessUpdate?(
+    update: Uint8Array,
+    next: next
+  ): Function | void | Promise<void | Function>;
+  onConnectionError?(error: Error): void;
+};
