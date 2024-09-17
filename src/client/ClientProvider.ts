@@ -1,5 +1,12 @@
 import { io, Manager, Socket } from "socket.io-client";
-import { ClientProviderOptions } from "types";
+import {
+  AWARENESS_EMIT,
+  AwarenessUpdate,
+  ClientProviderOptions,
+  PROXY_UPDATE_EMIT,
+  SYNC_DOCUMENT,
+  UPDATE_EMIT,
+} from "types";
 import * as Y from "yjs";
 import * as awarenessProtocol from "y-protocols/awareness";
 
@@ -43,6 +50,33 @@ export class ClientProvider {
     } else {
       this.initWithManager(urlOrManager);
     }
+
+    /* Local Changes */
+    this.yDoc.on("update", (update) => {
+      this.onYDocUpdate(update);
+      this.onProxyUpdate(update);
+    });
+    this.awareness.on("change", (changes: AwarenessUpdate) => {
+      this.onAwarenessUpdate(changes);
+    });
+
+    /* Socket Changes */
+    this.socket.on(UPDATE_EMIT, (update: Uint8Array) => {
+      this.incomingUpdate(update);
+    });
+    this.socket.on(PROXY_UPDATE_EMIT, (update: Uint8Array) => {
+      this.incomingProxyUpdate(update);
+    });
+    this.socket.on(AWARENESS_EMIT, (update: Uint8Array) => {
+      this.incomingAwarenessUpdate(update);
+    });
+
+    this.socket.on("connect_error", (error: Error) => {
+      this.onConnectionError(error);
+    });
+
+    // Start syncing document with backend
+    this.syncDocument();
   }
 
   private initWithUrl(url: string): void {
@@ -82,4 +116,24 @@ export class ClientProvider {
   public getSocket(): Socket {
     return this.socket;
   }
+
+  public syncDocument(): void {
+    this.socket.emit(SYNC_DOCUMENT);
+  }
+
+  /* On Y.Doc Changes */
+  private onYDocUpdate(update: Uint8Array): void {}
+
+  private onProxyUpdate(update: Uint8Array): void {}
+
+  private onAwarenessUpdate(changes: AwarenessUpdate): void {}
+
+  /* On Socket Changes */
+  private incomingUpdate(update: Uint8Array): void {}
+
+  private incomingProxyUpdate(update: Uint8Array): void {}
+
+  private incomingAwarenessUpdate(update: Uint8Array): void {}
+
+  private onConnectionError(error: Error): void {}
 }
