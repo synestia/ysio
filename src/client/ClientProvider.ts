@@ -6,6 +6,7 @@ import {
   PROXY_UPDATE_EMIT,
   SYNC_DOCUMENT,
   UPDATE_EMIT,
+  next,
 } from "types";
 import * as Y from "yjs";
 import * as awarenessProtocol from "y-protocols/awareness";
@@ -81,7 +82,7 @@ export class ClientProvider {
 
   private initWithUrl(url: string): void {
     // Remove trailing slash
-    if (url.endsWith("/")) {
+    while (url.endsWith("/")) {
       url = url.slice(0, -1);
     }
 
@@ -122,18 +123,152 @@ export class ClientProvider {
   }
 
   /* On Y.Doc Changes */
-  private onYDocUpdate(update: Uint8Array): void {}
+  private onYDocUpdate(update: Uint8Array): void {
+    if (this.options?.updateLogic === "only-proxy") {
+      return;
+    }
 
-  private onProxyUpdate(update: Uint8Array): void {}
+    const next: next = (update: Uint8Array) => {
+      this.socket.emit(UPDATE_EMIT, update);
+    };
 
-  private onAwarenessUpdate(changes: AwarenessUpdate): void {}
+    if (this.options?.onUpdate !== undefined) {
+      const result = this.options.onUpdate(update, next);
+
+      if (result instanceof Promise) {
+        result.then((fn) => fn && fn());
+      } else {
+        result && result();
+      }
+    } else {
+      next(update);
+    }
+  }
+
+  private onProxyUpdate(update: Uint8Array): void {
+    if (this.options?.updateLogic === "only-server") {
+      return;
+    }
+
+    const next: next = (update: Uint8Array) => {
+      this.socket.emit(PROXY_UPDATE_EMIT, update);
+    };
+
+    if (this.options?.onProxyUpdate !== undefined) {
+      const result = this.options.onProxyUpdate(update, next);
+
+      if (result instanceof Promise) {
+        result.then((fn) => fn && fn());
+      } else {
+        result && result();
+      }
+    } else {
+      next(update);
+    }
+  }
+
+  private onAwarenessUpdate(changes: AwarenessUpdate): void {
+    const changedClients = changes.added
+      .concat(changes.updated)
+      .concat(changes.removed);
+    const update = awarenessProtocol.encodeAwarenessUpdate(
+      this.awareness,
+      changedClients
+    );
+
+    const next: next = (update: Uint8Array) => {
+      this.socket.emit(AWARENESS_EMIT, update);
+    };
+
+    if (this.options?.onAwarenessUpdate !== undefined) {
+      const result = this.options.onAwarenessUpdate(update, next);
+
+      if (result instanceof Promise) {
+        result.then((fn) => fn && fn());
+      } else {
+        result && result();
+      }
+    } else {
+      next(update);
+    }
+  }
 
   /* On Socket Changes */
-  private incomingUpdate(update: Uint8Array): void {}
+  private incomingUpdate(update: Uint8Array): void {
+    if (this.options?.updateLogic === "only-proxy") {
+      return;
+    }
 
-  private incomingProxyUpdate(update: Uint8Array): void {}
+    const next: next = (update: Uint8Array) => {
+      this.yDoc.transact(() => {
+        Y.applyUpdate(this.yDoc, update);
+      });
+    };
 
-  private incomingAwarenessUpdate(update: Uint8Array): void {}
+    if (this.options?.incomingUpdate !== undefined) {
+      const result = this.options.incomingUpdate(update, next);
 
-  private onConnectionError(error: Error): void {}
+      if (result instanceof Promise) {
+        result.then((fn) => fn && fn());
+      } else {
+        result && result();
+      }
+    } else {
+      next(update);
+    }
+  }
+
+  private incomingProxyUpdate(update: Uint8Array): void {
+    if (this.options?.updateLogic === "only-server") {
+      return;
+    }
+
+    const next: next = (update: Uint8Array) => {
+      this.yDoc.transact(() => {
+        Y.applyUpdate(this.yDoc, update);
+      });
+    };
+
+    if (this.options?.incomingProxyUpdate !== undefined) {
+      const result = this.options.incomingProxyUpdate(update, next);
+
+      if (result instanceof Promise) {
+        result.then((fn) => fn && fn());
+      } else {
+        result && result();
+      }
+    } else {
+      next(update);
+    }
+  }
+
+  private incomingAwarenessUpdate(update: Uint8Array): void {
+    const next: next = (update: Uint8Array) => {
+      awarenessProtocol.applyAwarenessUpdate(
+        this.awareness,
+        update,
+        this.socket
+      );
+    };
+
+    if (this.options?.incomingAwarenessUpdate !== undefined) {
+      const result = this.options.incomingAwarenessUpdate(update, next);
+
+      if (result instanceof Promise) {
+        result.then((fn) => fn && fn());
+      } else {
+        result && result();
+      }
+    } else {
+      next(update);
+    }
+  }
+
+  private onConnectionError(error: Error): void {
+    if (this.options?.onConnectionError !== undefined) {
+      this.options.onConnectionError(error);
+    } else {
+      console.error(error);
+    }
+  }
 }
