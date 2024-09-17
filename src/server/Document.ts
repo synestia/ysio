@@ -60,11 +60,9 @@ export class Document extends Y.Doc {
       let result = this.DocumentOptions.onUpdate(update, next, socket);
 
       if (result instanceof Promise) {
-        result = await result;
-      }
-
-      if (result instanceof Function) {
-        result();
+        result.then((fn) => fn && fn());
+      } else {
+        result && result();
       }
 
       if (this.DocumentOptions?.persistence !== undefined) {
@@ -86,11 +84,9 @@ export class Document extends Y.Doc {
       let result = this.DocumentOptions.onProxyUpdate(update, next, socket);
 
       if (result instanceof Promise) {
-        result = await result;
-      }
-
-      if (result instanceof Function) {
-        result();
+        result.then((fn) => fn && fn());
+      } else {
+        result && result();
       }
     }
   }
@@ -111,11 +107,9 @@ export class Document extends Y.Doc {
       );
 
       if (result instanceof Promise) {
-        result = await result;
-      }
-
-      if (result instanceof Function) {
-        result();
+        result.then((fn) => fn && fn());
+      } else {
+        result && result();
       }
     } else {
       next(update);
