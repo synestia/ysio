@@ -3,10 +3,9 @@ import {
   DocumentOptions,
   ServerProviderOptions,
   UPDATE_EMIT,
-  PROXY_UPDATE_EMIT,
-  next,
+  PROXY_UPDATE_EMIT, 
   AWARENESS_EMIT,
-} from "./types";
+} from "types";
 import { Document } from "./Document";
 
 export class ServerProvider {

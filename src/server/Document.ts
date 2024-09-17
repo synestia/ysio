@@ -6,7 +6,8 @@ import {
   PROXY_UPDATE_EMIT,
   AWARENESS_EMIT,
   next,
-} from "./types";
+} from "types";
+
 import { Namespace, Socket } from "socket.io";
 
 export class Document extends Y.Doc {
@@ -120,7 +121,15 @@ export class Document extends Y.Doc {
     }
   }
 
-  private onAwarenessUpdate({ added, updated, removed }): void {
+  private onAwarenessUpdate({
+    added,
+    updated,
+    removed,
+  }: {
+    added: number[];
+    updated: number[];
+    removed: number[];
+  }): void {
     const changedClients = added.concat(updated).concat(removed);
     this.documentNamespace.emit(
       AWARENESS_EMIT,
