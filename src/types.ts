@@ -1,5 +1,5 @@
 import { Socket } from "socket.io";
-import { Document } from "./Document";
+import { Document } from "./server/Document";
 
 export const UPDATE_EMIT = "update-yjs";
 export const AWARENESS_EMIT = "awareness-yjs";
