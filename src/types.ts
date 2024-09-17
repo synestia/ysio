@@ -14,11 +14,36 @@ export type AwarenessUpdate = {
 
 /* Server side types */
 
-export type Persistence = {
+type PersistenceOptions = {
   provider: any;
   bindState: (doc: Document) => void;
   writeState: (doc: Document) => void;
 };
+
+export class Persistence {
+  provider: any;
+  bindState: (doc: Document) => void;
+  writeState: (doc: Document) => void;
+
+  constructor(
+    provider: any,
+    bindState: (doc: Document) => void,
+    writeState: (doc: Document) => void
+  ) {
+    this.provider = provider;
+    this.bindState = bindState;
+    this.writeState = writeState;
+  }
+}
+
+export function definePersistence(options: PersistenceOptions) {
+  const { provider, bindState, writeState } = options;
+
+  const boundBindState = bindState.bind({ provider });
+  const boundWriteState = writeState.bind({ provider });
+
+  return new Persistence(provider, boundBindState, boundWriteState);
+}
 
 export type next = (update: Uint8Array) => void;
 
