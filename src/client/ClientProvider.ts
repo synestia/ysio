@@ -12,6 +12,9 @@ import {
 import * as Y from "yjs";
 import * as awarenessProtocol from "y-protocols/awareness";
 
+/**
+ * ClientProvider is a class that provides a client-side interface for Yjs documents.
+ */
 export class ClientProvider {
   private _socket!: Socket;
 
@@ -22,12 +25,26 @@ export class ClientProvider {
   private _yDoc: Y.Doc;
   private _awareness: awarenessProtocol.Awareness;
 
+  /**
+   *
+   * @param url - The URL of the server to connect to.
+   * @param documentName - The name of the document
+   * @param yDoc - The Y.Doc instance to sync with the server
+   * @param {ClientProviderOptions} options - Options for the client provider
+   */
   constructor(
     url: string,
     documentName: string,
     yDoc: Y.Doc,
     options?: ClientProviderOptions
   );
+  /**
+   *
+   * @param manager - The socket.io manager instance
+   * @param documentName - The name of the document
+   * @param yDoc - The Y.Doc instance to sync with the server
+   * @param {ClientProviderOptions} options - Options for the client provider
+   */
   constructor(
     manager: Manager,
     documentName: string,
@@ -129,10 +146,17 @@ export class ClientProvider {
     return this._yDoc;
   }
 
+  public get awareness(): awarenessProtocol.Awareness {
+    return this._awareness;
+  }
+
   public get socket(): Socket {
     return this._socket;
   }
 
+  /**
+   * Syncs the document with the server.
+  */
   public syncDocument(): void {
     this._socket.emit(SYNC_DOCUMENT);
   }
@@ -149,6 +173,7 @@ export class ClientProvider {
 
     if (this._options?.onUpdate !== undefined) {
       const result = this._options.onUpdate(update, next);
+      // If user returned next function from onUpdate, call it
 
       if (result instanceof Promise) {
         result.then((fn) => fn && fn());
@@ -171,6 +196,7 @@ export class ClientProvider {
 
     if (this._options?.onProxyUpdate !== undefined) {
       const result = this._options.onProxyUpdate(update, next);
+      // If user returned next function from onProxyUpdate, call it
 
       if (result instanceof Promise) {
         result.then((fn) => fn && fn());
@@ -197,6 +223,7 @@ export class ClientProvider {
 
     if (this._options?.onAwarenessUpdate !== undefined) {
       const result = this._options.onAwarenessUpdate(update, next);
+      // If user returned next function from onAwarenessUpdate, call it
 
       if (result instanceof Promise) {
         result.then((fn) => fn && fn());
@@ -222,6 +249,7 @@ export class ClientProvider {
 
     if (this._options?.incomingUpdate !== undefined) {
       const result = this._options.incomingUpdate(update, next);
+      // If user returned next function from incomingUpdate, call it
 
       if (result instanceof Promise) {
         result.then((fn) => fn && fn());
@@ -246,6 +274,7 @@ export class ClientProvider {
 
     if (this._options?.incomingProxyUpdate !== undefined) {
       const result = this._options.incomingProxyUpdate(update, next);
+      // If user returned next function from incomingProxyUpdate, call it
 
       if (result instanceof Promise) {
         result.then((fn) => fn && fn());
@@ -268,6 +297,7 @@ export class ClientProvider {
 
     if (this._options?.incomingAwarenessUpdate !== undefined) {
       const result = this._options.incomingAwarenessUpdate(update, next);
+      // If user returned next function from incomingAwarenessUpdate, call it
 
       if (result instanceof Promise) {
         result.then((fn) => fn && fn());

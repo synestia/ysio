@@ -11,6 +11,13 @@ import {
 
 import { Namespace, Socket } from "socket.io";
 
+/**
+ * Document is a class that represents a Yjs document.
+ * It extends Y.Doc and adds functionality for synchronization, proxying, and awareness.
+ *
+ * @extends Y.Doc
+ * @param name - The name of the document
+ */
 export class Document extends Y.Doc {
   public readonly name: string;
 
@@ -152,7 +159,7 @@ export class Document extends Y.Doc {
     super.destroy();
   }
 
-  public getNamespace(): Namespace {
+  public get namespace(): Namespace {
     return this.documentNamespace;
   }
 }
