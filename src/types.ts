@@ -1,3 +1,4 @@
+import * as Y from "yjs";
 import { Socket } from "socket.io";
 import { Document } from "./server/Document";
 
@@ -5,6 +6,7 @@ export const UPDATE_EMIT = "update-yjs";
 export const AWARENESS_EMIT = "awareness-yjs";
 export const PROXY_UPDATE_EMIT = "proxy-update-yjs";
 export const SYNC_DOCUMENT = "sync-document-yjs";
+export const CONNECT_MESSAGE = "connection-message-yjs";
 
 export type AwarenessUpdate = {
   added: number[];
@@ -73,7 +75,7 @@ export type DocumentOptions = {
 
 export type ServerProviderOptions = {
   authenticate?(socket: Socket): boolean | Promise<boolean>;
-  onConnection?(document: Document, toEmit: any): void;
+  onConnection?(document: Document, content: any): any;
 };
 
 /* Client side types */
@@ -122,4 +124,9 @@ export type ClientProviderOptions = {
     next: next
   ): Function | void | Promise<void | Function>;
   onConnectionError?(error: Error): void;
+
+  ConnectionMessageOptions?: {
+    sendMessage(yDoc?: Y.Doc): any;
+    onCallback(callback: any, yDoc?: Y.Doc): void;
+  };
 };

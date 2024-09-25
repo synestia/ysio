@@ -2,6 +2,7 @@ import { io, Manager, Socket } from "socket.io-client";
 import {
   AWARENESS_EMIT,
   AwarenessUpdate,
+  CONNECT_MESSAGE,
   ClientProviderOptions,
   PROXY_UPDATE_EMIT,
   SYNC_DOCUMENT,
@@ -78,6 +79,19 @@ export class ClientProvider {
     if (!this._options?.autoConnect) {
       // Start syncing document with backend
       this.syncDocument();
+    }
+
+    // Send connect message
+    if (this._options?.ConnectionMessageOptions) {
+      this._socket.emit(
+        CONNECT_MESSAGE,
+        this._options.ConnectionMessageOptions.sendMessage(this._yDoc),
+        (response: any) =>
+          this._options!.ConnectionMessageOptions!.onCallback(
+            response,
+            this._yDoc
+          )
+      );
     }
   }
 

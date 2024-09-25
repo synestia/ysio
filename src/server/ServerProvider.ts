@@ -3,8 +3,9 @@ import {
   DocumentOptions,
   ServerProviderOptions,
   UPDATE_EMIT,
-  PROXY_UPDATE_EMIT, 
+  PROXY_UPDATE_EMIT,
   AWARENESS_EMIT,
+  CONNECT_MESSAGE,
 } from "types";
 import { Document } from "./Document";
 
@@ -51,9 +52,8 @@ export class ServerProvider {
       this.onDisconnect(document, socket);
 
       if (this.serverProviderOptions?.onConnection) {
-        socket.emit(
-          "connection-message",
-          this.serverProviderOptions.onConnection(document, socket)
+        socket.on(CONNECT_MESSAGE, (content, callback) =>
+          callback(this.serverProviderOptions!.onConnection!(document, content))
         );
       }
     });
